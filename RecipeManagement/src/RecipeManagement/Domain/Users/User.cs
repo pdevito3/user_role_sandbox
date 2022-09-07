@@ -31,7 +31,7 @@ public class User : BaseEntity
 
     [JsonIgnore]
     [IgnoreDataMember]
-    public virtual ICollection<UserRole> Roles { get; private set; }
+    public virtual ICollection<UserRole> Roles { get; private set; } = new List<UserRole>();
 
 
     public static User Create(UserForCreationDto userForCreationDto)

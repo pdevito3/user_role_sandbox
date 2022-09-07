@@ -8,6 +8,8 @@ using FluentAssertions;
 using NUnit.Framework;
 using System.Net;
 using System.Threading.Tasks;
+using Domain.Roles;
+using SharedTestHelpers.Fakes.User;
 
 public class CreateRolePermissionTests : TestBase
 {
@@ -16,8 +18,12 @@ public class CreateRolePermissionTests : TestBase
     {
         // Arrange
         var fakeRolePermission = new FakeRolePermissionForCreationDto { }.Generate();
+        
+        var user = FakeUser.Generate();
+        user.AddRole(Role.SuperAdmin());
+        await InsertAsync(user);
 
-        _client.AddAuth(new[] {Roles.SuperAdmin});
+        _client.AddAuth(user.Sid);
 
         // Act
         var route = ApiRoutes.RolePermissions.Create;

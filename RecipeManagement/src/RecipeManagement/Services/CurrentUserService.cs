@@ -9,6 +9,8 @@ public interface ICurrentUserService : IRecipeManagementService
     string? FirstName { get; }
     string? LastName { get; }
     string? Username { get; }
+    string? ClientId { get; }
+    bool IsMachine { get; }
     ClaimsPrincipal? User { get; }
 }
 
@@ -21,6 +23,7 @@ public class CurrentUserService : ICurrentUserService
         _httpContextAccessor = httpContextAccessor;
     }
 
+    public ClaimsPrincipal? User => _httpContextAccessor.HttpContext?.User;
     public string? UserId => _httpContextAccessor.HttpContext?.User?.FindFirstValue(ClaimTypes.NameIdentifier);
     public string? Email => _httpContextAccessor.HttpContext?.User?.FindFirstValue(ClaimTypes.Email);
     public string? FirstName => _httpContextAccessor.HttpContext?.User?.FindFirstValue(ClaimTypes.GivenName);
@@ -28,7 +31,12 @@ public class CurrentUserService : ICurrentUserService
     public string? Username => _httpContextAccessor.HttpContext
         ?.User
         ?.Claims
-        ?.FirstOrDefault(x => x.ValueType is "preferred_username" or "username")
+        ?.FirstOrDefault(x => x.Type is "preferred_username" or "username")
         ?.Value;
-    public ClaimsPrincipal? User => _httpContextAccessor.HttpContext?.User;
+    public string? ClientId => _httpContextAccessor.HttpContext
+        ?.User
+        ?.Claims
+        ?.FirstOrDefault(x => x.Type is "client_id" or "clientId")
+        ?.Value;
+    public bool IsMachine => ClientId != null;
 }

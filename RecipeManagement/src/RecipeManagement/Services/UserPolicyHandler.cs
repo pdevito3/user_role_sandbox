@@ -10,6 +10,7 @@ using RecipeManagement.Domain;
 using HeimGuard;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
+using SharedKernel.Exceptions;
 
 public class UserPolicyHandler : IUserPolicyHandler
 {
@@ -31,22 +32,16 @@ public class UserPolicyHandler : IUserPolicyHandler
         var claimsPrincipal = _currentUserService.User;
         if (claimsPrincipal == null) throw new ArgumentNullException(nameof(claimsPrincipal));
         
-        var userId = _currentUserService.UserId;
+        var nameIdentifier = _currentUserService.UserId;
         var usersExist = _userRepository.Query().Any();
+        
         if (!usersExist)
-            await SeedRootUser(userId);
+            await SeedRootUser(nameIdentifier);
 
-        // todo does the current user service implementation also grab client_id?
-        var clientId = claimsPrincipal
-            .Claims
-            .Where(c => c.Type is "client_id")
-            .Select(r => r.Value)
-            .FirstOrDefault();
-        var roles = GetRoles(userId, clientId);
+        var roles = GetRoles(nameIdentifier);
 
         if (roles.Length == 0)
-            throw new Exception("This user has no roles assigned. Please contact an admin to be assigned a role.");
-            // TODO custom exception and handler? 500 or custom 4xx?
+            throw new NoRolesAssignedException();
 
         // super admins can do everything
         if(roles.Contains(Roles.SuperAdmin))
@@ -63,30 +58,27 @@ public class UserPolicyHandler : IUserPolicyHandler
 
     private async Task SeedRootUser(string userId)
     {
-        // TODO if machine, return error and tell them to login with a user?
         var rootUser = new UserForCreationDto()
         {
             Username = _currentUserService.Username,
             Email = _currentUserService.Email,
             FirstName = _currentUserService.FirstName,
             LastName = _currentUserService.LastName,
-            Sid = userId
+            Sid = userId // TODO rename...
         };
+
         var userCommand = new AddUser.Command(rootUser, true);
         var createdUser = await _mediator.Send(userCommand);
 
         var roleCommand = new AddUserRole.Command(createdUser.Id, Role.SuperAdmin().Value, true);
         await _mediator.Send(roleCommand);
+        
     }
 
-    private string[] GetRoles(string userSid, string clientId)
+    private string[] GetRoles(string nameIdentifier)
     {
-        if(!string.IsNullOrEmpty(userSid))
-            return _userRepository.GetRolesByUserSid(userSid).ToArray();
-        
-        // TODO -- add a clientId column and change entity to `RoleMappings`???
-        if(!string.IsNullOrEmpty(clientId))
-            return _userRepository.GetRolesByUserSid(userSid).ToArray();
+        if(!string.IsNullOrEmpty(nameIdentifier))
+            return _userRepository.GetRolesByUserSid(nameIdentifier).ToArray();
 
         return Array.Empty<string>();
     }

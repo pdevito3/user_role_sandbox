@@ -61,7 +61,7 @@ public class UserPolicyHandlerTests
         var mediator = new Mock<IMediator>();
         var userRepo = new Mock<IUserRepository>();
         userRepo.UsersExist();
-        userRepo.SetUserRole(Roles.SuperAdmin);
+        userRepo.SetRole(Roles.SuperAdmin);
         
         var currentUserService = new Mock<ICurrentUserService>();
         currentUserService.SetCurrentUser();
@@ -75,111 +75,110 @@ public class UserPolicyHandlerTests
         permissions.Should().BeEquivalentTo(Permissions.List().ToArray());
     }
     
-    // [Test]
-    // public async Task superadmin_machine_gets_all_permissions()
-    // {
-    //     // Arrange
-    //     var mediator = new Mock<IMediator>();
-    //     var userRepo = new Mock<IUserRepository>();
-    //     userRepo.UsersExist();
-    //     var currentUserService = new Mock<ICurrentUserService>();
-    //     currentUserService
-    //         .Setup(c => c.User)
-    //         .Returns(SetMachineClaim());
-    //     var rolePermissionsRepo = new Mock<IRolePermissionRepository>();
-    //     
-    //     userRepo.SetUserRole(Roles.SuperAdmin);
-    //
-    //     // Act
-    //     var userPolicyHandler = new UserPolicyHandler(rolePermissionsRepo.Object, currentUserService.Object, userRepo.Object, mediator.Object);
-    //     var permissions = await userPolicyHandler.GetUserPermissions();
-    //     
-    //     // Assert
-    //     permissions.Should().BeEquivalentTo(Permissions.List().ToArray());
-    // }
+    [Test]
+    public async Task superadmin_machine_gets_all_permissions()
+    {
+        // Arrange
+        var mediator = new Mock<IMediator>();
+        var userRepo = new Mock<IUserRepository>();
+        userRepo.UsersExist();
+        var currentUserService = new Mock<ICurrentUserService>();
+        currentUserService.SetMachine();
+        var rolePermissionsRepo = new Mock<IRolePermissionRepository>();
+        
+        userRepo.SetRole(Roles.SuperAdmin);
     
-    // [Test]
-    // public async Task non_super_admin_gets_assigned_permissions_only()
-    // {
-    //     // Arrange
-    //     var permissionToAssign = _faker.PickRandom(Permissions.List());
-    //     var randomOtherPermission = _faker.PickRandom(Permissions.List().Where(p => p != permissionToAssign));
-    //     var nonSuperAdminRole = _faker.PickRandom(Roles.List().Where(p => p != Roles.SuperAdmin));
-    //     var user = SetUserRole(nonSuperAdminRole);
-    //
-    //     var rolePermission = RolePermission.Create(new RolePermissionForCreationDto()
-    //     {
-    //         Role = nonSuperAdminRole,
-    //         Permission = permissionToAssign
-    //     });
-    //     var rolePermissions = new List<RolePermission>() {rolePermission};
-    //     var mockData = rolePermissions.AsQueryable().BuildMock();
-    //     
-    //     // Act
-    //     var currentUserService = new Mock<ICurrentUserService>();
-    //     currentUserService
-    //         .Setup(c => c.User)
-    //         .Returns(user);
-    //     var rolePermissionsRepo = new Mock<IRolePermissionRepository>();
-    //     var userRepo = new Mock<IUserRepository>();
-    //     rolePermissionsRepo
-    //         .Setup(c => c.Query())
-    //         .Returns(mockData);
-    //
-    //     var userPolicyHandler = new UserPolicyHandler(rolePermissionsRepo.Object, currentUserService.Object, userRepo.Object, mediator.Object);
-    //     var permissions = await userPolicyHandler.GetUserPermissions();
-    //     
-    //     // Assert
-    //     permissions.Should().Contain(permissionToAssign);
-    //     permissions.Should().NotContain(randomOtherPermission);
-    // }
-    //
-    // [Test]
-    // public async Task claims_role_duplicate_permissions_removed()
-    // {
-    //     // Arrange
-    //     var permissionToAssign = _faker.PickRandom(Permissions.List());
-    //     var nonSuperAdminRole = _faker.PickRandom(Roles.List().Where(p => p != Roles.SuperAdmin));
-    //     var user = SetUserRole(nonSuperAdminRole);
-    //
-    //     var rolePermission = RolePermission.Create(new RolePermissionForCreationDto()
-    //     {
-    //         Role = nonSuperAdminRole,
-    //         Permission = permissionToAssign
-    //     });
-    //     var rolePermissions = new List<RolePermission>() {rolePermission, rolePermission};
-    //     var mockData = rolePermissions.AsQueryable().BuildMock();
-    //     
-    //     // Act
-    //     var currentUserService = new Mock<ICurrentUserService>();
-    //     currentUserService
-    //         .Setup(c => c.User)
-    //         .Returns(user);
-    //     var rolePermissionsRepo = new Mock<IRolePermissionRepository>();
-    //     var userRepo = new Mock<IUserRepository>();
-    //     rolePermissionsRepo
-    //         .Setup(c => c.Query())
-    //         .Returns(mockData);
-    //
-    //     var userPolicyHandler = new UserPolicyHandler(rolePermissionsRepo.Object, currentUserService.Object, userRepo.Object, mediator.Object);
-    //     var permissions = await userPolicyHandler.GetUserPermissions();
-    //     
-    //     // Assert
-    //     permissions.Count(p => p == permissionToAssign).Should().Be(1);
-    //     permissions.Should().Contain(permissionToAssign);
-    // }
+        // Act
+        var userPolicyHandler = new UserPolicyHandler(rolePermissionsRepo.Object, currentUserService.Object, userRepo.Object, mediator.Object);
+        var permissions = await userPolicyHandler.GetUserPermissions();
+        
+        // Assert
+        permissions.Should().BeEquivalentTo(Permissions.List().ToArray());
+    }
     
+    [Test]
+    public async Task non_super_admin_gets_assigned_permissions_only()
+    {
+        // Arrange
+        var permissionToAssign = _faker.PickRandom(Permissions.List());
+        var randomOtherPermission = _faker.PickRandom(Permissions.List().Where(p => p != permissionToAssign));
+        var nonSuperAdminRole = _faker.PickRandom(Roles.List().Where(p => p != Roles.SuperAdmin));
+        
+        var currentUserService = new Mock<ICurrentUserService>();
+        currentUserService.SetCurrentUser();
+        
+        var mediator = new Mock<IMediator>();
+        var userRepo = new Mock<IUserRepository>();
+        userRepo.UsersExist();
+        userRepo.SetRole(nonSuperAdminRole);
+    
+        var rolePermission = RolePermission.Create(new RolePermissionForCreationDto()
+        {
+            Role = nonSuperAdminRole,
+            Permission = permissionToAssign
+        });
+        var rolePermissions = new List<RolePermission>() {rolePermission};
+        var mockData = rolePermissions.AsQueryable().BuildMock();
+        var rolePermissionsRepo = new Mock<IRolePermissionRepository>();
+        rolePermissionsRepo
+            .Setup(c => c.Query())
+            .Returns(mockData);
+        
+        // Act
+    
+        var userPolicyHandler = new UserPolicyHandler(rolePermissionsRepo.Object, currentUserService.Object, userRepo.Object, mediator.Object);
+        var permissions = await userPolicyHandler.GetUserPermissions();
+        
+        // Assert
+        permissions.Should().Contain(permissionToAssign);
+        permissions.Should().NotContain(randomOtherPermission);
+    }
+    
+    [Test]
+    public async Task claims_role_duplicate_permissions_removed()
+    {
+        // Arrange
+        var permissionToAssign = _faker.PickRandom(Permissions.List());
+        var nonSuperAdminRole = _faker.PickRandom(Roles.List().Where(p => p != Roles.SuperAdmin));
+        
+        var currentUserService = new Mock<ICurrentUserService>();
+        currentUserService.SetCurrentUser();
+        
+        var mediator = new Mock<IMediator>();
+        var userRepo = new Mock<IUserRepository>();
+        userRepo.UsersExist();
+        userRepo.SetRole(nonSuperAdminRole);
+    
+        var rolePermission = RolePermission.Create(new RolePermissionForCreationDto()
+        {
+            Role = nonSuperAdminRole,
+            Permission = permissionToAssign
+        });
+        var rolePermissions = new List<RolePermission>() {rolePermission, rolePermission};
+        var mockData = rolePermissions.AsQueryable().BuildMock();
+        var rolePermissionsRepo = new Mock<IRolePermissionRepository>();
+        rolePermissionsRepo
+            .Setup(c => c.Query())
+            .Returns(mockData);
+        
+        // Act
+        var userPolicyHandler = new UserPolicyHandler(rolePermissionsRepo.Object, currentUserService.Object, userRepo.Object, mediator.Object);
+        var permissions = await userPolicyHandler.GetUserPermissions();
+        
+        // Assert
+        permissions.Count(p => p == permissionToAssign).Should().Be(1);
+        permissions.Should().Contain(permissionToAssign);
+    }
 }
 
 public static class UserExtensions
 {
-    public static void SetUserRole(this Mock<IUserRepository> repo, string role)
+    public static void SetRole(this Mock<IUserRepository> repo, string role)
     {
         repo
             .Setup(x => x.GetRolesByUserSid(It.IsAny<string>()))
             .Returns(new List<string> { role });
     }
-    
 
     public static void UsersExist(this Mock<IUserRepository> repo)
     {
@@ -194,35 +193,54 @@ public static class UserExtensions
 }
 public static class CurrentUserServiceExtensions
 {
-    public static void SetCurrentUser(this Mock<ICurrentUserService> repo)
+    public static void SetCurrentUser(this Mock<ICurrentUserService> repo, string nameIdentifier = null)
     {
-        var user = SetUserClaim();
+        var user = SetUserClaim(nameIdentifier);
         repo
             .Setup(c => c.User)
             .Returns(user);
         repo
             .Setup(c => c.UserId)
             .Returns(user?.FindFirstValue(ClaimTypes.NameIdentifier));
+        repo
+            .Setup(c => c.IsMachine)
+            .Returns(false);
     }
     
-    private static ClaimsPrincipal SetUserClaim(string sid = null)
+    public static void SetMachine(this Mock<ICurrentUserService> repo, string nameIdentifier = null, string clientId = null)
     {
-        sid ??= Guid.NewGuid().ToString();
+        var machine = SetMachineClaim(nameIdentifier, clientId);
+        repo
+            .Setup(c => c.User)
+            .Returns(machine);
+        repo
+            .Setup(c => c.UserId)
+            .Returns(machine?.FindFirstValue(ClaimTypes.NameIdentifier));
+        repo
+            .Setup(c => c.IsMachine)
+            .Returns(true);
+    }
+    
+    private static ClaimsPrincipal SetUserClaim(string nameIdentifier = null)
+    {
+        nameIdentifier ??= Guid.NewGuid().ToString();
         var claims = new List<Claim>
         {
-            new Claim(ClaimTypes.NameIdentifier, sid)
+            new Claim(ClaimTypes.NameIdentifier, nameIdentifier)
         };
 
         var identity = new ClaimsIdentity(claims);
         return new ClaimsPrincipal(identity);
     }
     
-    private static ClaimsPrincipal SetMachineClaim(string clientId = null)
+    private static ClaimsPrincipal SetMachineClaim(string nameIdentifier = null, string clientId = null)
     {
+        nameIdentifier ??= Guid.NewGuid().ToString();
         clientId ??= Guid.NewGuid().ToString();
         var claims = new List<Claim>
         {
-            new Claim("client_id", clientId)
+            new Claim(ClaimTypes.NameIdentifier, nameIdentifier),
+            new Claim("clientId", clientId)
         };
 
         var identity = new ClaimsIdentity(claims);
