@@ -5,10 +5,8 @@ using System.Reflection;
 public static class Permissions
 {
     // Permissions marker - do not delete this comment
-    public const string CanDeleteUserRole = nameof(CanDeleteUserRole);
-    public const string CanUpdateUserRole = nameof(CanUpdateUserRole);
+    public const string CanRemoveUserRole = nameof(CanRemoveUserRole);
     public const string CanAddUserRole = nameof(CanAddUserRole);
-    public const string CanReadUserRoles = nameof(CanReadUserRoles);
     public const string CanDeleteUser = nameof(CanDeleteUser);
     public const string CanUpdateUser = nameof(CanUpdateUser);
     public const string CanAddUser = nameof(CanAddUser);

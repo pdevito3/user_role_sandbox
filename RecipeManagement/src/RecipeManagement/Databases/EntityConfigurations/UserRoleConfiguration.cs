@@ -1,7 +1,7 @@
 namespace RecipeManagement.Databases.EntityConfigurations;
 
+using RecipeManagement.Domain.Users;
 using RecipeManagement.Domain.Roles;
-using RecipeManagement.Domain.UserRoles;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 

@@ -1,26 +1,23 @@
-using RecipeManagement.Domain.UserRoles.Services;
-
 namespace RecipeManagement.Services;
 
-using System.Security.Claims;
+using Domain.Users.Services;
 using RecipeManagement.Domain.RolePermissions.Services;
 using SharedKernel.Domain;
 using RecipeManagement.Domain;
 using HeimGuard;
-using Newtonsoft.Json;
 using Microsoft.EntityFrameworkCore;
 
 public class UserPolicyHandler : IUserPolicyHandler
 {
     private readonly IRolePermissionRepository _rolePermissionRepository;
     private readonly ICurrentUserService _currentUserService;
-    private readonly IUserRoleRepository _userRoleRepository;
+    private readonly IUserRepository _userRepository;
 
-    public UserPolicyHandler(IRolePermissionRepository rolePermissionRepository, ICurrentUserService currentUserService, IUserRoleRepository userRoleRepository)
+    public UserPolicyHandler(IRolePermissionRepository rolePermissionRepository, ICurrentUserService currentUserService, IUserRepository userRepository)
     {
         _rolePermissionRepository = rolePermissionRepository;
         _currentUserService = currentUserService;
-        _userRoleRepository = userRoleRepository;
+        _userRepository = userRepository;
     }
     
     public async Task<IEnumerable<string>> GetUserPermissions()
@@ -58,11 +55,11 @@ public class UserPolicyHandler : IUserPolicyHandler
     private string[] GetRoles(string userSid, string clientId)
     {
         if(!string.IsNullOrEmpty(userSid))
-            return _userRoleRepository.GetRolesByUserSid(userSid).ToArray();
+            return _userRepository.GetRolesByUserSid(userSid).ToArray();
         
         // TODO -- add a clientId column and change entity to `RoleMappings`???
         if(!string.IsNullOrEmpty(clientId))
-            return _userRoleRepository.GetRolesByUserSid(userSid).ToArray();
+            return _userRepository.GetRolesByUserSid(userSid).ToArray();
 
         return Array.Empty<string>();
     }

@@ -1,5 +1,4 @@
 using Moq.Language.Flow;
-using RecipeManagement.Domain.UserRoles.Services;
 
 namespace RecipeManagement.UnitTests.UnitTests.ServiceTests;
 
@@ -16,6 +15,7 @@ using Moq;
 using NUnit.Framework;
 using System.Threading.Tasks;
 using System.Security.Claims;
+using RecipeManagement.Domain.Users.Services;
 
 [Parallelizable]
 public class UserPolicyHandlerTests
@@ -27,7 +27,7 @@ public class UserPolicyHandlerTests
         _faker = new Faker();
     }
 
-    public static IReturnsResult<IUserRoleRepository> SetUserRole(Mock<IUserRoleRepository> repo, string role)
+    public static IReturnsResult<IUserRepository> SetUserRole(Mock<IUserRepository> repo, string role)
     {
         return repo
             .Setup(x => x.GetRolesByUserSid(It.IsAny<string>()))
@@ -71,9 +71,9 @@ public class UserPolicyHandlerTests
             .Setup(c => c.User)
             .Returns(claimsPrincipal);
         var rolePermissionsRepo = new Mock<IRolePermissionRepository>();
-        var userRoleRepo = new Mock<IUserRoleRepository>();
+        var userRepo = new Mock<IUserRepository>();
 
-        var userPolicyHandler = new UserPolicyHandler(rolePermissionsRepo.Object, currentUserService.Object, userRoleRepo.Object);
+        var userPolicyHandler = new UserPolicyHandler(rolePermissionsRepo.Object, currentUserService.Object, userRepo.Object);
         
         Func<Task> permissions = () => userPolicyHandler.GetUserPermissions();
         
@@ -85,17 +85,17 @@ public class UserPolicyHandlerTests
     public async Task superadmin_user_gets_all_permissions()
     {
         // Arrange
-        var userRoleRepo = new Mock<IUserRoleRepository>();
+        var userRepo = new Mock<IUserRepository>();
         var currentUserService = new Mock<ICurrentUserService>();
         currentUserService
             .Setup(c => c.User)
             .Returns(SetUserClaim());
         var rolePermissionsRepo = new Mock<IRolePermissionRepository>();
         
-        SetUserRole(userRoleRepo, Roles.SuperAdmin);
+        SetUserRole(userRepo, Roles.SuperAdmin);
 
         // Act
-        var userPolicyHandler = new UserPolicyHandler(rolePermissionsRepo.Object, currentUserService.Object, userRoleRepo.Object);
+        var userPolicyHandler = new UserPolicyHandler(rolePermissionsRepo.Object, currentUserService.Object, userRepo.Object);
         var permissions = await userPolicyHandler.GetUserPermissions();
         
         // Assert
@@ -106,17 +106,17 @@ public class UserPolicyHandlerTests
     public async Task superadmin_machine_gets_all_permissions()
     {
         // Arrange
-        var userRoleRepo = new Mock<IUserRoleRepository>();
+        var userRepo = new Mock<IUserRepository>();
         var currentUserService = new Mock<ICurrentUserService>();
         currentUserService
             .Setup(c => c.User)
             .Returns(SetMachineClaim());
         var rolePermissionsRepo = new Mock<IRolePermissionRepository>();
         
-        SetUserRole(userRoleRepo, Roles.SuperAdmin);
+        SetUserRole(userRepo, Roles.SuperAdmin);
 
         // Act
-        var userPolicyHandler = new UserPolicyHandler(rolePermissionsRepo.Object, currentUserService.Object, userRoleRepo.Object);
+        var userPolicyHandler = new UserPolicyHandler(rolePermissionsRepo.Object, currentUserService.Object, userRepo.Object);
         var permissions = await userPolicyHandler.GetUserPermissions();
         
         // Assert
@@ -146,12 +146,12 @@ public class UserPolicyHandlerTests
     //         .Setup(c => c.User)
     //         .Returns(user);
     //     var rolePermissionsRepo = new Mock<IRolePermissionRepository>();
-    //     var userRoleRepo = new Mock<IUserRoleRepository>();
+    //     var userRepo = new Mock<IUserRepository>();
     //     rolePermissionsRepo
     //         .Setup(c => c.Query())
     //         .Returns(mockData);
     //
-    //     var userPolicyHandler = new UserPolicyHandler(rolePermissionsRepo.Object, currentUserService.Object, userRoleRepo.Object);
+    //     var userPolicyHandler = new UserPolicyHandler(rolePermissionsRepo.Object, currentUserService.Object, userRepo.Object);
     //     var permissions = await userPolicyHandler.GetUserPermissions();
     //     
     //     // Assert
@@ -181,12 +181,12 @@ public class UserPolicyHandlerTests
     //         .Setup(c => c.User)
     //         .Returns(user);
     //     var rolePermissionsRepo = new Mock<IRolePermissionRepository>();
-    //     var userRoleRepo = new Mock<IUserRoleRepository>();
+    //     var userRepo = new Mock<IUserRepository>();
     //     rolePermissionsRepo
     //         .Setup(c => c.Query())
     //         .Returns(mockData);
     //
-    //     var userPolicyHandler = new UserPolicyHandler(rolePermissionsRepo.Object, currentUserService.Object, userRoleRepo.Object);
+    //     var userPolicyHandler = new UserPolicyHandler(rolePermissionsRepo.Object, currentUserService.Object, userRepo.Object);
     //     var permissions = await userPolicyHandler.GetUserPermissions();
     //     
     //     // Assert
