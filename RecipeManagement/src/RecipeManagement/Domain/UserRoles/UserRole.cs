@@ -1,3 +1,5 @@
+using RecipeManagement.Domain.Roles;
+
 namespace RecipeManagement.Domain.UserRoles;
 
 using SharedKernel.Exceptions;
@@ -21,20 +23,8 @@ public class UserRole : BaseEntity
     public virtual Guid UserId { get; private set; }
     public virtual User User { get; private set; }
 
-    private RoleEnum _role;
-    [Sieve(CanFilter = true, CanSort = true)]
-    public virtual string Role
-    {
-        get => _role.Name;
-        private set
-        {
-            if (!RoleEnum.TryFromName(value, true, out var parsed))
-                throw new InvalidSmartEnumPropertyName(nameof(Role), value);
-
-            _role = parsed;
-        }
-    }
-
+    public virtual Role Role { get; private set; }
+    
 
     public static UserRole Create(UserRoleForCreationDto userRoleForCreationDto)
     {
@@ -43,7 +33,7 @@ public class UserRole : BaseEntity
         var newUserRole = new UserRole();
 
         newUserRole.UserId = userRoleForCreationDto.UserId;
-        newUserRole.Role = userRoleForCreationDto.Role;
+        newUserRole.Role = new Role(userRoleForCreationDto.Role);
 
         newUserRole.QueueDomainEvent(new UserRoleCreated(){ UserRole = newUserRole });
         
@@ -55,7 +45,7 @@ public class UserRole : BaseEntity
         new UserRoleForUpdateDtoValidator().ValidateAndThrow(userRoleForUpdateDto);
 
         UserId = userRoleForUpdateDto.UserId;
-        Role = userRoleForUpdateDto.Role;
+        Role = new Role(userRoleForUpdateDto.Role);
 
         QueueDomainEvent(new UserRoleUpdated(){ Id = Id });
     }

@@ -1,3 +1,5 @@
+using RecipeManagement.Domain.Roles;
+
 namespace RecipeManagement.IntegrationTests.FeatureTests.UserRoles;
 
 using RecipeManagement.SharedTestHelpers.Fakes.UserRole;
@@ -33,6 +35,8 @@ public class AddUserRoleCommandTests : TestBase
         userRoleReturned.Should().BeEquivalentTo(fakeUserRoleOne, options =>
             options.ExcludingMissingMembers());
         userRoleCreated.Should().BeEquivalentTo(fakeUserRoleOne, options =>
-            options.ExcludingMissingMembers());
+            options.ExcludingMissingMembers()
+                .Excluding(x => x.Role));
+        userRoleCreated.Role.Should().BeEquivalentTo(new Role(fakeUserRoleOne.Role));
     }
 }

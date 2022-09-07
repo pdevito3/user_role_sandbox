@@ -1,3 +1,5 @@
+using RecipeManagement.Domain.Roles;
+
 namespace RecipeManagement.IntegrationTests.FeatureTests.UserRoles;
 
 using RecipeManagement.SharedTestHelpers.Fakes.UserRole;
@@ -30,7 +32,9 @@ public class UserRoleQueryTests : TestBase
 
         // Assert
         userRole.Should().BeEquivalentTo(fakeUserRoleOne, options =>
-            options.ExcludingMissingMembers());
+            options.ExcludingMissingMembers()
+                .Excluding(x => x.Role));
+        userRole.Role.Should().BeEquivalentTo(new Role(fakeUserRoleOne.Role));
     }
 
     [Test]

@@ -1,3 +1,5 @@
+using RecipeManagement.Domain.Roles;
+
 namespace RecipeManagement.SharedTestHelpers.Fakes.UserRole;
 
 using AutoBogus;
