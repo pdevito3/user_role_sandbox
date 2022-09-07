@@ -17,11 +17,13 @@ public static class AddUserRole
     {
         public readonly Guid UserId;
         public readonly string Role;
+        public readonly bool SkipPermissions;
 
-        public Command(Guid userId, string role)
+        public Command(Guid userId, string role, bool skipPermissions = false)
         {
             UserId = userId;
             Role = role;
+            SkipPermissions = skipPermissions;
         }
     }
 
@@ -40,7 +42,9 @@ public static class AddUserRole
 
         public async Task<bool> Handle(Command request, CancellationToken cancellationToken)
         {
-            await _heimGuard.MustHavePermission<ForbiddenAccessException>(Permissions.CanAddUserRole);
+            if(!request.SkipPermissions)
+                await _heimGuard.MustHavePermission<ForbiddenAccessException>(Permissions.CanAddUserRole);
+            
             var user = await _userRepository.GetById(request.UserId, true, cancellationToken);
 
             var roleToAdd = user.AddRole(new Role(request.Role));

@@ -1,10 +1,14 @@
 namespace RecipeManagement.Services;
 
+using Domain.Roles;
+using Domain.Users.Dtos;
+using Domain.Users.Features;
 using Domain.Users.Services;
 using RecipeManagement.Domain.RolePermissions.Services;
 using SharedKernel.Domain;
 using RecipeManagement.Domain;
 using HeimGuard;
+using MediatR;
 using Microsoft.EntityFrameworkCore;
 
 public class UserPolicyHandler : IUserPolicyHandler
@@ -12,12 +16,14 @@ public class UserPolicyHandler : IUserPolicyHandler
     private readonly IRolePermissionRepository _rolePermissionRepository;
     private readonly ICurrentUserService _currentUserService;
     private readonly IUserRepository _userRepository;
+    private readonly IMediator _mediator;
 
-    public UserPolicyHandler(IRolePermissionRepository rolePermissionRepository, ICurrentUserService currentUserService, IUserRepository userRepository)
+    public UserPolicyHandler(IRolePermissionRepository rolePermissionRepository, ICurrentUserService currentUserService, IUserRepository userRepository, IMediator mediator)
     {
         _rolePermissionRepository = rolePermissionRepository;
         _currentUserService = currentUserService;
         _userRepository = userRepository;
+        _mediator = mediator;
     }
     
     public async Task<IEnumerable<string>> GetUserPermissions()
@@ -26,6 +32,9 @@ public class UserPolicyHandler : IUserPolicyHandler
         if (claimsPrincipal == null) throw new ArgumentNullException(nameof(claimsPrincipal));
         
         var userId = _currentUserService.UserId;
+        var usersExist = _userRepository.Query().Any();
+        if (!usersExist)
+            await SeedRootUser(userId);
 
         // todo does the current user service implementation also grab client_id?
         var clientId = claimsPrincipal
@@ -52,6 +61,24 @@ public class UserPolicyHandler : IUserPolicyHandler
         return await Task.FromResult(permissions);
     }
 
+    private async Task SeedRootUser(string userId)
+    {
+        // TODO if machine, return error and tell them to login with a user?
+        var rootUser = new UserForCreationDto()
+        {
+            Username = _currentUserService.Username,
+            Email = _currentUserService.Email,
+            FirstName = _currentUserService.FirstName,
+            LastName = _currentUserService.LastName,
+            Sid = userId
+        };
+        var userCommand = new AddUser.Command(rootUser, true);
+        var createdUser = await _mediator.Send(userCommand);
+
+        var roleCommand = new AddUserRole.Command(createdUser.Id, Role.SuperAdmin().Value, true);
+        await _mediator.Send(roleCommand);
+    }
+
     private string[] GetRoles(string userSid, string clientId)
     {
         if(!string.IsNullOrEmpty(userSid))
@@ -62,10 +89,5 @@ public class UserPolicyHandler : IUserPolicyHandler
             return _userRepository.GetRolesByUserSid(userSid).ToArray();
 
         return Array.Empty<string>();
-    }
-
-    private class RealmAccess
-    {
-        public string[] Roles { get; set; }
     }
 }

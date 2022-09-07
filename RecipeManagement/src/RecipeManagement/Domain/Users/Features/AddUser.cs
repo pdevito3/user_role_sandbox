@@ -15,10 +15,12 @@ public static class AddUser
     public class Command : IRequest<UserDto>
     {
         public readonly UserForCreationDto UserToAdd;
+        public readonly bool SkipPermissions;
 
-        public Command(UserForCreationDto userToAdd)
+        public Command(UserForCreationDto userToAdd, bool skipPermissions = false)
         {
             UserToAdd = userToAdd;
+            SkipPermissions = skipPermissions;
         }
     }
 
@@ -39,7 +41,8 @@ public static class AddUser
 
         public async Task<UserDto> Handle(Command request, CancellationToken cancellationToken)
         {
-            await _heimGuard.MustHavePermission<ForbiddenAccessException>(Permissions.CanAddUser);
+            if(!request.SkipPermissions)
+                await _heimGuard.MustHavePermission<ForbiddenAccessException>(Permissions.CanAddUser);
 
             var user = User.Create(request.UserToAdd);
             await _userRepository.Add(user, cancellationToken);
