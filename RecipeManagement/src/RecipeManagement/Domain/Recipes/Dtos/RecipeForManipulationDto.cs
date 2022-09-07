@@ -1,0 +1,11 @@
+namespace RecipeManagement.Domain.Recipes.Dtos;
+
+public abstract class RecipeForManipulationDto 
+{
+        public string Title { get; set; }
+        public string Visibility { get; set; }
+        public string Directions { get; set; }
+        public int? Rating { get; set; }
+        public DateOnly? DateOfOrigin { get; set; }
+
+}
