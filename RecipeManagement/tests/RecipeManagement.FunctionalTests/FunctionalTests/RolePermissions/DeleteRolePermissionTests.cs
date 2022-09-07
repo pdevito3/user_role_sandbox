@@ -16,9 +16,10 @@ public class DeleteRolePermissionTests : TestBase
     {
         // Arrange
         var fakeRolePermission = FakeRolePermission.Generate(new FakeRolePermissionForCreationDto().Generate());
-
-        _client.AddAuth(new[] {Roles.SuperAdmin});
         await InsertAsync(fakeRolePermission);
+
+        var user = await AddNewSuperAdmin();
+        _client.AddAuth(user.Sid);
 
         // Act
         var route = ApiRoutes.RolePermissions.Delete.Replace(ApiRoutes.RolePermissions.Id, fakeRolePermission.Id.ToString());

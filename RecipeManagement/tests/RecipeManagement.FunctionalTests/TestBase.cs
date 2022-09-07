@@ -7,7 +7,10 @@ using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.DependencyInjection;
 using NUnit.Framework;
 using System.Threading.Tasks;
- 
+using Domain.Roles;
+using Domain.Users;
+using SharedTestHelpers.Fakes.User;
+
 public class TestBase
 {
     public static IServiceScopeFactory _scopeFactory;
@@ -123,5 +126,13 @@ public class TestBase
             }
             return db.SaveChangesAsync();
         });
+    }
+
+    public static async Task<User> AddNewSuperAdmin()
+    {
+        var user = FakeUser.Generate();
+        user.AddRole(Role.SuperAdmin());
+        await InsertAsync(user);
+        return user;
     }
 }

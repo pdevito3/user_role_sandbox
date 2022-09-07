@@ -17,9 +17,10 @@ public class UpdateRolePermissionRecordTests : TestBase
         // Arrange
         var fakeRolePermission = FakeRolePermission.Generate(new FakeRolePermissionForCreationDto().Generate());
         var updatedRolePermissionDto = new FakeRolePermissionForUpdateDto { }.Generate();
-
-        _client.AddAuth(new[] {Roles.SuperAdmin});
         await InsertAsync(fakeRolePermission);
+        
+        var user = await AddNewSuperAdmin();
+        _client.AddAuth(user.Sid);
 
         // Act
         var route = ApiRoutes.RolePermissions.Put.Replace(ApiRoutes.RolePermissions.Id, fakeRolePermission.Id.ToString());

@@ -15,9 +15,8 @@ public class GetRolePermissionListTests : TestBase
     public async Task get_rolepermission_list_returns_success_using_valid_auth_credentials()
     {
         // Arrange
-        
-
-        _client.AddAuth(new[] {Roles.SuperAdmin});
+        var user = await AddNewSuperAdmin();
+        _client.AddAuth(user.Sid);
 
         // Act
         var result = await _client.GetRequestAsync(ApiRoutes.RolePermissions.GetList);

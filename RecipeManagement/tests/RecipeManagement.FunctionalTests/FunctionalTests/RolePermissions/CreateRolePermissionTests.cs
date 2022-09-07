@@ -18,11 +18,8 @@ public class CreateRolePermissionTests : TestBase
     {
         // Arrange
         var fakeRolePermission = new FakeRolePermissionForCreationDto { }.Generate();
-        
-        var user = FakeUser.Generate();
-        user.AddRole(Role.SuperAdmin());
-        await InsertAsync(user);
 
+        var user = await AddNewSuperAdmin();
         _client.AddAuth(user.Sid);
 
         // Act
