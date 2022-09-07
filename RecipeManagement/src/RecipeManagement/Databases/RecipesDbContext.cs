@@ -8,6 +8,8 @@ using RecipeManagement.Domain.Authors;
 using RecipeManagement.Domain.Ingredients;
 using MediatR;
 using RecipeManagement.Domain.RolePermissions;
+using RecipeManagement.Domain.Users;
+using RecipeManagement.Domain.UserRoles;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 using System.Linq.Expressions;
@@ -28,6 +30,8 @@ public class RecipesDbContext : DbContext
     }
 
     #region DbSet Region - Do Not Delete
+    public DbSet<User> Users { get; set; }
+    public DbSet<UserRole> UserRoles { get; set; }
     public DbSet<RolePermission> RolePermissions { get; set; }
 
     public DbSet<Recipe> Recipes { get; set; }

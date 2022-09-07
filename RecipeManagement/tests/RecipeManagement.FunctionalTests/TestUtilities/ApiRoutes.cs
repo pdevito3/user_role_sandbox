@@ -6,6 +6,30 @@ public class ApiRoutes
 
     // new api route marker - do not delete
 
+public static class UserRoles
+    {
+        public const string Id = "{id}";
+        public const string GetList = $"{Base}/userRoles";
+        public const string GetRecord = $"{Base}/userRoles/{Id}";
+        public const string Create = $"{Base}/userRoles";
+        public const string Delete = $"{Base}/userRoles/{Id}";
+        public const string Put = $"{Base}/userRoles/{Id}";
+        public const string Patch = $"{Base}/userRoles/{Id}";
+        public const string CreateBatch = $"{Base}/userRoles/batch";
+    }
+
+public static class Users
+    {
+        public const string Id = "{id}";
+        public const string GetList = $"{Base}/users";
+        public const string GetRecord = $"{Base}/users/{Id}";
+        public const string Create = $"{Base}/users";
+        public const string Delete = $"{Base}/users/{Id}";
+        public const string Put = $"{Base}/users/{Id}";
+        public const string Patch = $"{Base}/users/{Id}";
+        public const string CreateBatch = $"{Base}/users/batch";
+    }
+
 public static class Ingredients
     {
         public const string Id = "{id}";
